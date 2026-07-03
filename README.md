@@ -14,44 +14,48 @@ No missed leads. No duplicate contacts. No generic cold emails.
 
 ---
 
-## Agent Workflow Diagram
+## Pipeline at a Glance
 
-The diagram below mirrors the actual n8n canvas node-for-node.
-
-```mermaid
-flowchart TD
-    MT["Manual Trigger\nExecute workflow"] --> HR1["HTTP Request1\nGET jsonplaceholder (sample lead)"]
-    HR1 --> HR0["HTTP Request\nGET ZeroBounce (validate email)"]
-    WH["Webhook (POST)\nLive lead intake"] --> CJS2
-
-    HR0 --> IF1{"If\nstatus == valid?"}
-    IF1 -->|false| DROP(["Drop invalid lead"])
-    IF1 -->|true| CJS2["Code in JavaScript2\nNormalize lead"]
-
-    CJS2 --> EF["Edit Fields"]
-    EF --> GRS["Get row(s) in sheet\nDeduplication check"]
-    GRS --> CJS1["Code in JavaScript1"]
-    CJS1 --> MAM2["Message a model2\nAI Lead Scoring (OpenAI)"]
-    MAM2 --> CJS4["Code in JavaScript4\nParse AI score/status"]
-    CJS4 --> IFS{"If1\nai_score >= 70?"}
-
-    IFS -->|true| ARS1["Append row in sheet1"]
-    IFS -->|false| ARS0["Append row in sheet"]
-
-    ARS0 --> HR2["HTTP Request2\nPOST create GHL contact"]
-    HR2 --> LOOP["Loop Over Items"]
-    LOOP -->|done| ENDX(["End"])
-    LOOP -->|loop item| HR3["HTTP Request3\nScrape lead website"]
-
-    HR3 --> CJS3["Code in JavaScript3\nClean website text"]
-    CJS3 --> MAM["Message a model\nAI Email Writer (OpenAI)"]
-    MAM --> CJS["Code in JavaScript\nFormat email"]
-    CJS --> WAIT["Wait\nRandom 2-5 min delay"]
-    WAIT --> GMAIL["Send a message1\nGmail send"]
-    GMAIL --> SLACK["Send a message\nSlack #new-leads"]
-
-    SLACK --> LOOP
-    SLACK --> HR4["HTTP Request4\nUpdate GHL tags (Email Sent)"]
+```
+Webhook / Manual Trigger
+        │
+        ▼
+  Email Validation          ← ZeroBounce API (drops invalid emails)
+        │
+        ▼
+  Lead Normalization        ← Parses name, email, phone, city, website, budget
+        │
+        ▼
+  Deduplication Check       ← Cross-references Google Sheets by email
+        │
+        ▼
+  AI Lead Scoring           ← GPT-4o-mini scores 0–100 (Hot / Warm / Cold)
+        │
+       / \
+      /   \
+  Score ≥ 70         Score < 70
+      │                   │
+      ▼                   ▼
+  Hot Lead Sheet      Cold Lead Sheet
+  GHL Contact Created
+      │
+      ▼
+  Website Scrape            ← Fetches and strips lead's website HTML
+      │
+      ▼
+  AI Email Writer           ← GPT-4.1-mini writes personalized outreach
+      │
+      ▼
+  Random Delay (2–5 min)    ← Anti-spam throttle
+      │
+      ▼
+  Gmail Send
+      │
+      ▼
+  Slack Notification        ← #new-leads channel alert
+      │
+      ▼
+  GHL Tag Update            ← "Email Sent", "AI Personalized", "Slack Notified"
 ```
 
 ---
@@ -67,6 +71,20 @@ flowchart TD
 | **GPT-4.1-mini** | Personalized outreach email generation |
 | **Gmail** | Automated email delivery |
 | **Slack** | Instant team notifications on new leads |
+
+---
+
+## Roadmap / Planned Integrations
+
+Not yet wired into the workflow — under consideration for future versions:
+
+| Integration | Planned Purpose |
+|---|---|
+| **Airtable** | Alternative/complementary lead database to Google Sheets |
+| **Apollo** | Lead sourcing & contact/firmographic enrichment |
+| **ZoomInfo** | B2B contact and company data enrichment |
+| **Calendly** | Auto-embed booking link in outreach emails, meeting scheduling |
+| **WhatsApp** | Outbound outreach & internal team notifications alongside Slack |
 
 ---
 
@@ -142,6 +160,48 @@ Emails are dispatched with a **random 2–5 minute delay** per contact to avoid 
 |---|---|
 | **Webhook (POST)** | Production — receives leads from forms, landing pages, or external tools |
 | **Manual Execute** | Testing — pulls sample data from JSONPlaceholder and runs the full pipeline |
+
+---
+
+## Agent Workflow Diagram
+
+The diagram below mirrors the actual n8n canvas node-for-node.
+
+```mermaid
+flowchart TD
+    MT["Manual Trigger\nExecute workflow"] --> HR1["HTTP Request1\nGET jsonplaceholder (sample lead)"]
+    HR1 --> HR0["HTTP Request\nGET ZeroBounce (validate email)"]
+    WH["Webhook (POST)\nLive lead intake"] --> CJS2
+
+    HR0 --> IF1{"If\nstatus == valid?"}
+    IF1 -->|false| DROP(["Drop invalid lead"])
+    IF1 -->|true| CJS2["Code in JavaScript2\nNormalize lead"]
+
+    CJS2 --> EF["Edit Fields"]
+    EF --> GRS["Get row(s) in sheet\nDeduplication check"]
+    GRS --> CJS1["Code in JavaScript1"]
+    CJS1 --> MAM2["Message a model2\nAI Lead Scoring (OpenAI)"]
+    MAM2 --> CJS4["Code in JavaScript4\nParse AI score/status"]
+    CJS4 --> IFS{"If1\nai_score >= 70?"}
+
+    IFS -->|true| ARS1["Append row in sheet1"]
+    IFS -->|false| ARS0["Append row in sheet"]
+
+    ARS0 --> HR2["HTTP Request2\nPOST create GHL contact"]
+    HR2 --> LOOP["Loop Over Items"]
+    LOOP -->|done| ENDX(["End"])
+    LOOP -->|loop item| HR3["HTTP Request3\nScrape lead website"]
+
+    HR3 --> CJS3["Code in JavaScript3\nClean website text"]
+    CJS3 --> MAM["Message a model\nAI Email Writer (OpenAI)"]
+    MAM --> CJS["Code in JavaScript\nFormat email"]
+    CJS --> WAIT["Wait\nRandom 2-5 min delay"]
+    WAIT --> GMAIL["Send a message1\nGmail send"]
+    GMAIL --> SLACK["Send a message\nSlack #new-leads"]
+
+    SLACK --> LOOP
+    SLACK --> HR4["HTTP Request4\nUpdate GHL tags (Email Sent)"]
+```
 
 ---
 
