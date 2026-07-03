@@ -14,52 +14,6 @@ No missed leads. No duplicate contacts. No generic cold emails.
 
 ---
 
-## Pipeline at a Glance
-
-```
-Webhook / Manual Trigger
-        │
-        ▼
-  Email Validation          ← ZeroBounce API (drops invalid emails)
-        │
-        ▼
-  Lead Normalization        ← Parses name, email, phone, city, website, budget
-        │
-        ▼
-  Deduplication Check       ← Cross-references Google Sheets by email
-        │
-        ▼
-  AI Lead Scoring           ← GPT-4o-mini scores 0–100 (Hot / Warm / Cold)
-        │
-       / \
-      /   \
-  Score ≥ 70         Score < 70
-      │                   │
-      ▼                   ▼
-  Hot Lead Sheet      Cold Lead Sheet
-  GHL Contact Created
-      │
-      ▼
-  Website Scrape            ← Fetches and strips lead's website HTML
-      │
-      ▼
-  AI Email Writer           ← GPT-4.1-mini writes personalized outreach
-      │
-      ▼
-  Random Delay (2–5 min)    ← Anti-spam throttle
-      │
-      ▼
-  Gmail Send
-      │
-      ▼
-  Slack Notification        ← #new-leads channel alert
-      │
-      ▼
-  GHL Tag Update            ← "Email Sent", "AI Personalized", "Slack Notified"
-```
-
----
-
 ## Agent Workflow Diagram
 
 The diagram below mirrors the actual n8n canvas node-for-node.
