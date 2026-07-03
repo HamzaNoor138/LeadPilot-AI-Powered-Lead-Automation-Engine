@@ -10,6 +10,8 @@ LeadPilot is a zero-touch lead pipeline built on n8n. The moment a lead enters �
 
 No missed leads. No duplicate contacts. No generic cold emails.
 
+> **Beats spam filters by design:** every email is uniquely written from the lead's own website content (never a template) and sent after a randomized 2–5 minute delay, so outreach reads — and behaves — like it was sent by a human, not a blast tool.
+
 ---
 
 ## Pipeline at a Glance
@@ -148,6 +150,17 @@ No placeholders. No fake claims. Every email reads like it was written by hand.
 ## Deduplication
 
 Before any lead reaches scoring or CRM, the system queries Google Sheets and filters out any email already on record. Duplicates are silently dropped — no noise, no double-contacts in GHL.
+
+---
+
+## Solving the Spam Problem
+
+Cold outreach normally gets flagged for two reasons: **identical templated content** and **bursty, bot-like send patterns**. LeadPilot's pipeline is built to defeat both:
+
+- **Personalization kills pattern-matching** — every email is generated fresh from the lead's own scraped website content (see [AI Outreach Email](#ai-outreach-email)), so no two messages share the same boilerplate for spam filters to fingerprint.
+- **Randomized delay kills rate-based detection** — each send is throttled by a **random 2–5 minute delay** per contact ([Anti-Spam Throttle](#anti-spam-throttle) in the pipeline), breaking the fixed-interval "blast" signature that triggers ESP and inbox spam filters.
+
+Together, content variation + timing variation make automated outreach indistinguishable from a human sending one-off emails — protecting sender reputation and keeping deliverability high at scale.
 
 ---
 
